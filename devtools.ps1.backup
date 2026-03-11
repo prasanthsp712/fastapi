@@ -1,0 +1,68 @@
+﻿param(
+    [string]$Command
+)
+
+function Show-Help {
+    Write-Host "====================================" -ForegroundColor Cyan
+    Write-Host "    FastAPI DevTools" -ForegroundColor Green
+    Write-Host "====================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Commands:" -ForegroundColor Yellow
+    Write-Host "  run     - Start the application on port 8001"
+    Write-Host "  stop    - Stop the container"
+    Write-Host "  restart - Restart the container"
+    Write-Host "  logs    - View container logs"
+    Write-Host "  help    - Show this help"
+    Write-Host ""
+}
+
+function Start-App {
+    Write-Host "Building Docker image..." -ForegroundColor Blue
+    docker build -t fastapi-dev .
+    
+    docker stop fastapi-dev-container 2>$null
+    docker rm fastapi-dev-container 2>$null
+    
+    Write-Host "Starting container on port 8001..." -ForegroundColor Blue
+    docker run -d -p 8001:8000 -v ${PWD}:/app --name fastapi-dev-container fastapi-dev
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ App is running at: http://localhost:8001" -ForegroundColor Green
+        Write-Host "View logs with: .\devtools.ps1 logs" -ForegroundColor Yellow
+    } else {
+        Write-Host "❌ Failed to start container" -ForegroundColor Red
+    }
+}
+
+function Stop-App {
+    Write-Host "Stopping container..." -ForegroundColor Blue
+    docker stop fastapi-dev-container 2>$null
+    docker rm fastapi-dev-container 2>$null
+    Write-Host "✅ Container stopped" -ForegroundColor Green
+}
+
+function Show-Logs {
+    docker logs -f fastapi-dev-container
+}
+
+function Restart-App {
+    Stop-App
+    Start-App
+}
+
+if ($Command -eq "" -or $Command -eq $null) {
+    Show-Help
+    exit
+}
+
+switch ($Command.ToLower()) {
+    "run" { Start-App }
+    "stop" { Stop-App }
+    "restart" { Restart-App }
+    "logs" { Show-Logs }
+    "help" { Show-Help }
+    default {
+        Write-Host "❌ Unknown command: $Command" -ForegroundColor Red
+        Show-Help
+    }
+}

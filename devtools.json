@@ -1,0 +1,17 @@
+{
+
+  "imageName": "python:3.11",
+  "containerName": "fastapi-container",
+
+  "containerPort": 8000,
+  "defaultPort": 8000,
+  "debugPort": 5678,
+
+  "runCommand": "uvicorn app.main:app --host 0.0.0.0 --port ${containerPort} --reload",
+
+  "debugCommand": "python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:${debugPort} -m uvicorn app.main:app --host 0.0.0.0 --port ${containerPort} --reload",
+
+  "appRequirementFilePath": "requirements.txt",
+
+  "testCommand": "PYTHONPATH=/app pytest --cov=. --cov-report=html"
+}
