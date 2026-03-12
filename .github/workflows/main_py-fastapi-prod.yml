@@ -45,3 +45,4 @@ jobs:
               --resource-group fastapi-py1 \
               --slot staging \
               --target-slot production
+
