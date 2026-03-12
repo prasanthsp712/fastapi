@@ -22,5 +22,6 @@ jobs:
         with:
           app-name: py-fastapi-prod
           slot-name: staging
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEF6447D97A74D6FA8CCEFAC }}
           package: .
+
