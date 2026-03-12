@@ -1,9 +1,9 @@
 ﻿fastapi
-uvicorn
 pytest
 httpx
 debugpy
 watchfiles
 pydantic-settings
 pytest-cov
+uvicorn[standard]
 gunicorn
