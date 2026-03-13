@@ -67,6 +67,3 @@ swap-to-production:
             --name ${{ env.AZURE_WEBAPP_NAME }} \
             --slot staging \
             --target-slot production
-
-
-
