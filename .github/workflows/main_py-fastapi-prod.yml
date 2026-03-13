@@ -7,38 +7,89 @@ name: FastAPI Azure Deployment
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+
+env:
+  AZURE_WEBAPP_NAME: prasanth-fastapi-app
+  RESOURCE_GROUP: fastapi-rg
+  SLOT: staging
 
 jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.10
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Archive App
+        run: zip -r app.zip .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fastapi
+          path: app.zip
+
   deploy-staging:
+    needs: build
     runs-on: ubuntu-latest
     environment: staging
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: fastapi
 
-      - name: Deploy to Azure Web App (staging)
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to staging slot
         uses: azure/webapps-deploy@v2
         with:
-          app-name: py-fastapi-prod
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: staging
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
-          package: .
+          package: app.zip
 
-  deploy-production:
+  pre-swap-approval:
     needs: deploy-staging
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-      - name: Swap staging to production
-        uses: azure/CLI@v2
+      - run: echo "Waiting for approval before slot swap"
+
+  swap-slot:
+    needs: pre-swap-approval
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
         with:
-          inlineScript: |
-            az webapp deployment slot swap \
-              --name py-fastapi-prod \
-              --resource-group fastapi-py1 \
-              --slot staging \
-              --target-slot production
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Swap slots
+        run: |
+          az webapp deployment slot swap \
+          --resource-group $RESOURCE_GROUP \
+          --name $AZURE_WEBAPP_NAME \
+          --slot staging \
+          --target-slot production
+
+  post-deploy-approval:
+    needs: swap-slot
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - run: echo "Production deployment verified"
