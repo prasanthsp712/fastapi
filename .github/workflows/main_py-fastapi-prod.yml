@@ -15,7 +15,8 @@ jobs:
 deploy-staging:
 name: Deploy to Staging Slot
 runs-on: ubuntu-latest
-environment: staging
+environment:
+name: staging
 
 ```
 steps:
@@ -32,10 +33,11 @@ steps:
 ```
 
 deploy-production:
-name: Deploy to Production (Requires Approval)
+name: Deploy to Production (Approval Required)
 needs: deploy-staging
 runs-on: ubuntu-latest
-environment: production
+environment:
+name: production
 
 ```
 steps:
