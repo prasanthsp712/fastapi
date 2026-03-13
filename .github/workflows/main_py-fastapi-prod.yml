@@ -53,16 +53,19 @@ swap-to-production:
   runs-on: ubuntu-latest
 
   steps:
-    - name: Azure Login using Publish Profile
+    - name: Azure Login
       uses: azure/login@v1
       with:
-        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Swap staging slot to production
-      run: |
-        az webapp deployment slot swap \
-          --resource-group ${{ env.RESOURCE_GROUP }} \
-          --name ${{ env.AZURE_WEBAPP_NAME }} \
-          --slot staging \
-          --target-slot production
+      uses: azure/CLI@v2
+      with:
+        inlineScript: |
+          az webapp deployment slot swap \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --slot staging \
+            --target-slot production
+
 
