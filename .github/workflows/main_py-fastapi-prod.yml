@@ -32,9 +32,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
-    steps:
-      - name: Swap staging to production
-        uses: azure/CLI@v2
+    
+  steps:
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+
+    - name: Swap staging to production
+      uses: azure/CLI@v2
         with:
           inlineScript: |
             az webapp deployment slot swap \
@@ -42,3 +48,4 @@ jobs:
               --resource-group fastapi-py1 \
               --slot staging \
               --target-slot production
+
