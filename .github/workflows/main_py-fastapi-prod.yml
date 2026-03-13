@@ -12,15 +12,15 @@ on:
       - main
 
 jobs:
+
   deploy-staging:
     runs-on: ubuntu-latest
     environment: staging
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Deploy to Azure Web App (staging)
+      - name: Deploy to staging slot
         uses: azure/webapps-deploy@v2
         with:
           app-name: py-fastapi-prod
@@ -34,12 +34,9 @@ jobs:
     environment: production
 
     steps:
-      - name: Swap staging to production
-        uses: azure/CLI@v2
+      - name: Swap staging → production
+        uses: azure/webapps-deploy@v2
         with:
-          inlineScript: |
-            az webapp deployment slot swap \
-              --name py-fastapi-prod \
-              --resource-group fastapi-py1 \
-              --slot staging \
-              --target-slot production
+          app-name: py-fastapi-prod
+          slot-name: staging
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
