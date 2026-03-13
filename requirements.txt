@@ -5,5 +5,5 @@ debugpy
 watchfiles
 pydantic-settings
 pytest-cov
-uvicorn[standard]
+uvicorn
 gunicorn
