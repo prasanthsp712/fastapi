@@ -3,7 +3,6 @@
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
 # .github/workflows/deploy.yml
-
 name: FastAPI Azure Deployment
 
 on:
@@ -33,7 +32,7 @@ steps:
 ```
 
 deploy-production:
-name: Swap Staging to Production
+name: Deploy to Production (Requires Approval)
 needs: deploy-staging
 runs-on: ubuntu-latest
 environment: production
