@@ -6,54 +6,64 @@
 name: FastAPI Azure Deployment
 
 on:
-  push:
-    branches: [ main ]
+push:
+branches:
+- main
 
 env:
-  AZURE_WEBAPP_NAME: prasanth-fastapi-app
-  RESOURCE_GROUP: fastapi-rg
+AZURE_WEBAPP_NAME: py-fastapi-prod
+RESOURCE_GROUP: fastapi-py1
 
 jobs:
 
-  deploy-staging:
-    runs-on: ubuntu-latest
-    environment: staging
+deploy-staging:
+name: Deploy to Staging Slot
+runs-on: ubuntu-latest
+environment: staging
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+```
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      - name: Deploy to Azure Web App (staging)
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          slot-name: staging
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: .
+  - name: Deploy FastAPI to Azure (staging)
+    uses: azure/webapps-deploy@v2
+    with:
+      app-name: ${{ env.AZURE_WEBAPP_NAME }}
+      slot-name: staging
+      publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+      package: .
+```
 
-  approval-before-swap:
-    needs: deploy-staging
-    runs-on: ubuntu-latest
-    environment: production
+approval-before-swap:
+name: Production Approval
+needs: deploy-staging
+runs-on: ubuntu-latest
+environment: production
 
-    steps:
-      - name: Waiting for approval
-        run: echo "Waiting for production approval"
+```
+steps:
+  - name: Waiting for production approval
+    run: echo "Waiting for reviewer approval before production deployment"
+```
 
-  swap-to-production:
-    needs: approval-before-swap
-    runs-on: ubuntu-latest
+swap-to-production:
+name: Swap Staging to Production
+needs: approval-before-swap
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+```
+steps:
+  - name: Azure Login
+    uses: azure/login@v1
+    with:
+      creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Swap staging slot to production
-        run: |
-          az webapp deployment slot swap \
-            --resource-group $RESOURCE_GROUP \
-            --name $AZURE_WEBAPP_NAME \
-            --slot staging \
-            --target-slot production
+  - name: Swap staging slot to production
+    run: |
+      az webapp deployment slot swap \
+        --resource-group ${{ env.RESOURCE_GROUP }} \
+        --name ${{ env.AZURE_WEBAPP_NAME }} \
+        --slot staging \
+        --target-slot production
+```
