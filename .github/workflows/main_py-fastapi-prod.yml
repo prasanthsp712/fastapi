@@ -13,7 +13,7 @@ branches:
 jobs:
 
 deploy-staging:
-name: Deploy to Staging Slot
+name: Deploy to Staging
 runs-on: ubuntu-latest
 environment:
 name: staging
@@ -23,17 +23,17 @@ steps:
   - name: Checkout repository
     uses: actions/checkout@v4
 
-  - name: Deploy to Azure Web App (staging)
+  - name: Deploy to Azure Web App (staging slot)
     uses: azure/webapps-deploy@v2
     with:
       app-name: py-fastapi-prod
       slot-name: staging
       publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
-      package: ./app
+      package: .
 ```
 
 deploy-production:
-name: Deploy to Production (Approval Required)
+name: Swap to Production (Approval Required)
 needs: deploy-staging
 runs-on: ubuntu-latest
 environment:
@@ -48,4 +48,3 @@ steps:
       slot-name: staging
       publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
 ```
-
