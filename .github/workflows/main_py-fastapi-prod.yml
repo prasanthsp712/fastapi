@@ -6,44 +6,52 @@
 name: FastAPI Azure Deployment
 
 on:
-  push:
-    branches:
-      - main
+push:
+branches:
+- main
 
 jobs:
-  deploy-staging:
-    runs-on: ubuntu-latest
-    environment: staging
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+deploy-staging:
+name: Deploy FastAPI to Staging
+runs-on: ubuntu-latest
+environment: staging
 
-      - name: Deploy to Azure Web App (staging)
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: py-fastapi-prod
-          slot-name: staging
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
-          package: .
+```
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
- deploy-production:
-  needs: deploy-staging
-  runs-on: ubuntu-latest
-  environment: production
+  - name: Deploy FastAPI to Azure (staging slot)
+    uses: azure/webapps-deploy@v2
+    with:
+      app-name: py-fastapi-prod
+      slot-name: staging
+      publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+      package: .
+```
 
-  steps:
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+deploy-production:
+name: Deploy FastAPI to Production (Approval Required)
+needs: deploy-staging
+runs-on: ubuntu-latest
+environment: production
 
-    - name: Swap staging to production
-      uses: azure/CLI@v2
-      with:
-        inlineScript: |
-          az webapp deployment slot swap \
-            --name py-fastapi-prod \
-            --resource-group fastapi-py1 \
-            --slot staging \
-            --target-slot production
+```
+steps:
+  - name: Azure Login
+    uses: azure/login@v1
+    with:
+      creds: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+
+  - name: Swap staging slot to production
+    uses: azure/CLI@v2
+    with:
+      inlineScript: |
+        az webapp deployment slot swap \
+          --name py-fastapi-prod \
+          --resource-group fastapi-py1 \
+          --slot staging \
+          --target-slot production
+```
+
