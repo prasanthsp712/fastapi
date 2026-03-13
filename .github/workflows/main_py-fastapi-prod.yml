@@ -48,23 +48,21 @@ steps:
 ```
 
 swap-to-production:
-name: Swap Staging to Production
-needs: approval-before-swap
-runs-on: ubuntu-latest
+  name: Swap Staging to Production
+  needs: approval-before-swap
+  runs-on: ubuntu-latest
 
-```
-steps:
-  - name: Azure Login
-    uses: azure/login@v1
-    with:
-      creds: ${{ secrets.AZURE_CREDENTIALS }}
+  steps:
+    - name: Azure Login using Publish Profile
+      uses: azure/login@v1
+      with:
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
 
-  - name: Swap staging slot to production
-    run: |
-      az webapp deployment slot swap \
-        --resource-group ${{ env.RESOURCE_GROUP }} \
-        --name ${{ env.AZURE_WEBAPP_NAME }} \
-        --slot staging \
-        --target-slot production
-```
+    - name: Swap staging slot to production
+      run: |
+        az webapp deployment slot swap \
+          --resource-group ${{ env.RESOURCE_GROUP }} \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --slot staging \
+          --target-slot production
 
