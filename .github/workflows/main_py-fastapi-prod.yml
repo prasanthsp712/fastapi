@@ -31,7 +31,7 @@ steps:
     with:
       app-name: ${{ env.AZURE_WEBAPP_NAME }}
       slot-name: staging
-      publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+      publish-profile: ${{ AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
       package: .
 ```
 
@@ -67,3 +67,4 @@ steps:
         --slot staging \
         --target-slot production
 ```
+
