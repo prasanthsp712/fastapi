@@ -63,7 +63,7 @@ swap-to-production:
       with:
         inlineScript: |
           az webapp deployment slot swap \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group fastapi-py1 \
+            --name py-fastapi-prod \
             --slot staging \
             --target-slot production
