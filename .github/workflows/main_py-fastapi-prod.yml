@@ -6,64 +6,64 @@
 name: FastAPI Azure Deployment
 
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
 
 env:
-AZURE_WEBAPP_NAME: py-fastapi-prod
-RESOURCE_GROUP: fastapi-py1
+  AZURE_WEBAPP_NAME: py-fastapi-prod
+  RESOURCE_GROUP: fastapi-py1
 
 jobs:
 
-deploy-staging:
-name: Deploy to Staging Slot
-runs-on: ubuntu-latest
-environment: staging
+  deploy-staging:
+    name: Deploy to Staging Slot
+    runs-on: ubuntu-latest
+    environment: staging
 
-```
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Deploy FastAPI to Azure (staging)
-    uses: azure/webapps-deploy@v2
-    with:
-      app-name: ${{ env.AZURE_WEBAPP_NAME }}
-      slot-name: staging
-      publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
-      package: .
-```
+      - name: Deploy FastAPI to Azure (staging)
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: staging
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          package: .
 
-approval-before-swap:
-name: Production Approval
-needs: deploy-staging
-runs-on: ubuntu-latest
-environment: production
+  approval-before-swap:
+    name: Production Approval
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production
 
-```
-steps:
-  - name: Waiting for production approval
-    run: echo "Waiting for reviewer approval before production deployment"
-```
+    steps:
+      - name: Waiting for reviewer approval
+        run: echo "Waiting for production approval"
 
-swap-to-production:
-  name: Swap Staging to Production
-  needs: approval-before-swap
-  runs-on: ubuntu-latest
+  swap-to-production:
+    name: Swap Staging to Production
+    needs: approval-before-swap
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Swap staging slot to production
-      uses: azure/CLI@v2
-      with:
-        inlineScript: |
-          az webapp deployment slot swap \
-            --resource-group fastapi-py1 \
-            --name py-fastapi-prod \
-            --slot staging \
-            --target-slot production
+      - name: Swap staging slot to production
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az webapp deployment slot swap \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --name ${{ env.AZURE_WEBAPP_NAME }} \
+              --slot staging \
+              --target-slot production
