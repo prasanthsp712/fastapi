@@ -11,15 +11,10 @@ on:
     branches:
       - main
 
-# REQUIRED for OIDC — without this, azure/login silently fails
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
-  deploy-staging:
+  deploy:
     runs-on: ubuntu-latest
-    environment: staging
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,32 +29,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Deploy to Azure Web App (staging)
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: py-fastapi-prod
-          slot-name: staging
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
           package: .
-
-  deploy-production:
-    needs: deploy-staging
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Azure Login (OIDC)
-        uses: azure/login@v2          # v2 required for OIDC
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Swap slots
-        uses: azure/CLI@v2            # v2 inherits the OIDC session above
-        with:
-          inlineScript: |
-            az webapp deployment slot swap \
-              --name py-fastapi-prod \
-              --resource-group fastapi-py1 \
-              --slot staging \
-              --target-slot production
