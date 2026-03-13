@@ -34,7 +34,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: staging
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
           package: .
 
   approval-before-swap:
@@ -63,7 +63,7 @@ jobs:
         with:
           inlineScript: |
             az webapp deployment slot swap \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
-              --name ${{ env.AZURE_WEBAPP_NAME }} \
+              --resource-group fastapi-py1 \
+              --name py-fastapi-prod \
               --slot staging \
               --target-slot production
