@@ -48,3 +48,4 @@ steps:
       slot-name: staging
       publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
 ```
+
