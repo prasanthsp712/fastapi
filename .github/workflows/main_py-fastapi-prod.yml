@@ -12,64 +12,36 @@ on:
 env:
   AZURE_WEBAPP_NAME: prasanth-fastapi-app
   RESOURCE_GROUP: fastapi-rg
-  SLOT: staging
 
 jobs:
 
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.10
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Archive App
-        run: zip -r app.zip .
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: fastapi
-          path: app.zip
-
   deploy-staging:
-    needs: build
     runs-on: ubuntu-latest
     environment: staging
 
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: fastapi
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to staging slot
+      - name: Deploy to Azure Web App (staging)
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: staging
-          package: app.zip
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          package: .
 
-  pre-swap-approval:
+  approval-before-swap:
     needs: deploy-staging
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-      - run: echo "Waiting for approval before slot swap"
+      - name: Waiting for approval
+        run: echo "Waiting for production approval"
 
-  swap-slot:
-    needs: pre-swap-approval
+  swap-to-production:
+    needs: approval-before-swap
     runs-on: ubuntu-latest
 
     steps:
@@ -78,18 +50,10 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Swap slots
+      - name: Swap staging slot to production
         run: |
           az webapp deployment slot swap \
-          --resource-group $RESOURCE_GROUP \
-          --name $AZURE_WEBAPP_NAME \
-          --slot staging \
-          --target-slot production
-
-  post-deploy-approval:
-    needs: swap-slot
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - run: echo "Production deployment verified"
+            --resource-group $RESOURCE_GROUP \
+            --name $AZURE_WEBAPP_NAME \
+            --slot staging \
+            --target-slot production
