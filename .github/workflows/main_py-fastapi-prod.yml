@@ -7,36 +7,43 @@
 name: FastAPI Azure Deployment
 
 on:
-  push:
-    branches:
-      - main
+push:
+branches:
+- main
 
 jobs:
 
-  deploy-staging:
-    runs-on: ubuntu-latest
-    environment: staging
+deploy-staging:
+name: Deploy to Staging Slot
+runs-on: ubuntu-latest
+environment: staging
 
-    steps:
-      - uses: actions/checkout@v4
+```
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      - name: Deploy to staging slot
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: py-fastapi-prod
-          slot-name: staging
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
-          package: .
+  - name: Deploy to Azure Web App (staging)
+    uses: azure/webapps-deploy@v2
+    with:
+      app-name: py-fastapi-prod
+      slot-name: staging
+      publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+      package: ./app
+```
 
-  deploy-production:
-    needs: deploy-staging
-    runs-on: ubuntu-latest
-    environment: production
+deploy-production:
+name: Swap Staging to Production
+needs: deploy-staging
+runs-on: ubuntu-latest
+environment: production
 
-    steps:
-      - name: Swap staging → production
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: py-fastapi-prod
-          slot-name: staging
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+```
+steps:
+  - name: Swap staging slot to production
+    uses: azure/webapps-deploy@v2
+    with:
+      app-name: py-fastapi-prod
+      slot-name: staging
+      publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69F45359EEE6447D97A74D6FA8CECEAC }}
+```
